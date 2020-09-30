@@ -1,0 +1,9 @@
+Stack :
+Php 7.3.5
+Mysql 5.7.26
+Bootstrap
+
+creer une bdd nommée: mvc-todolist
+
+Temps passé : 8h
+
