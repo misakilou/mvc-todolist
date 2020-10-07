@@ -2,8 +2,10 @@ Stack :
 Php 7.3.5
 Mysql 5.7.26
 Bootstrap
+Twig pour le templating
 
 creer une bdd nommée: mvc-todolist
+faire un vhost vers le dossier du projet
 
 utilisateur de test
 login :john@doe.fr
