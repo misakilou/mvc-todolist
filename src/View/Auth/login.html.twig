@@ -1,0 +1,48 @@
+{% extends 'layout.html.twig' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">Login</div>
+                {% if message_bag is defined %} 
+                <div class="card-body">
+                    <ul>
+                    {% for message in message_bag %}
+                        <li>{{ message }}</li>
+                    {% endfor%}
+                    <ul>
+                </div>
+                {% endif %}
+                <div class="card-body">
+  
+
+                    <form id="Form" method="POST">
+
+                        <label>Email :</label> 
+                        <div class="d-flex" style="margin-bottom: 20px">
+                            <input type="email" name="email" class="form-control todo-list-input"
+                                placeholder="email">
+                        </div>
+
+                        <label>Password :</label> 
+                        <div class="d-flex" style="margin-bottom: 20px">
+                            <input type="password" name="password" class="form-control todo-list-input"
+                                placeholder="password">
+                        </div>
+                       
+
+                        <button type="submit" class="add btn btn-primary float-right">Valider</button>
+
+
+                    </form>
+
+    
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

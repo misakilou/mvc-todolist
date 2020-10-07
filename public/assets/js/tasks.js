@@ -100,6 +100,8 @@ jQuery(function () {
         let url = (taskId) ? '/api/tasks/' + taskId : '/api/tasks';
         let type = (taskId) ? 'Patch' : 'Post';
 
+        console.log('id > '+ taskId)
+
         jQuery.ajax({
             url: (taskId) ? '/api/tasks/' + taskId : '/api/tasks',
             type: (taskId) ? 'Patch' : 'Post',
@@ -122,6 +124,7 @@ jQuery(function () {
                     $("li#" + data.task.id).find(".widget-heading:first").text(data.task.title);
                 }
                 else {
+                    console.log('nope');
                     console.log(data.task);
 
                     if (data.task.parent_id) {

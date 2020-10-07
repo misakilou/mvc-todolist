@@ -77,7 +77,13 @@ abstract class AbstractManager
         $statement = $this->pdoConnection->prepare("INSERT INTO $this->table (".implode(', ', array_keys($data)).") VALUES (:".implode(', :', array_keys($data)).")");
     
         $statement->execute($data);
-        return $this->pdoConnection->query('SELECT id, title, done, parent_id, user_id, created_at, updated_at FROM ' . $this->table .' ORDER BY id DESC LIMIT 1', \PDO::FETCH_CLASS, $this->className)->fetch(\PDO::FETCH_OBJ);
+
+        /*
+        return  $this->pdoConnection->query('SELECT id , name , email , password , api_token FROM user', \PDO::FETCH_CLASS, $this->className)->fetch(\PDO::FETCH_OBJ);
+        */
+        
+        return $this->pdoConnection->query('SELECT * FROM ' . $this->table .' ORDER BY id DESC LIMIT 1', \PDO::FETCH_CLASS, $this->className)->fetch(\PDO::FETCH_OBJ);
+        
         
     }
 
@@ -96,9 +102,16 @@ abstract class AbstractManager
         $statement = $this->pdoConnection->prepare($query);
         $statement->setFetchMode(\PDO::FETCH_CLASS, $this->className);
         $statement->execute($data);
-
+        /*
         return $this->pdoConnection->query('SELECT id, title, done, parent_id, user_id, created_at, updated_at FROM ' . $this->table .' WHERE id = '.$id, \PDO::FETCH_CLASS, $this->className)->fetch(\PDO::FETCH_OBJ);
-              
+        */
+        /*
+        return $this->pdoConnection->query('SELECT * FROM ' . $this->table .' ORDER BY id DESC LIMIT 1', \PDO::FETCH_CLASS, $this->className)->fetch(\PDO::FETCH_OBJ);
+        */
+
+        return $this->selectOneById($id);
+
+
         
     }
 }

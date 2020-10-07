@@ -40,7 +40,7 @@
                                                     style="text-decoration: line-through;" {% endif %}>
                                                     <div class="widget-heading">{{ task.title }}
                                                     </div>
-                                                    <div class="widget-subheading"><i>Par Ludwig</i>
+                                                    <div class="widget-subheading"><i>{{ name }}</i>
                                                     </div>
                                                 </div>
                                                 <div class="widget-content-right">
@@ -75,7 +75,7 @@
                                                             <div class="widget-heading">{{ subtask.title }}
                                                             </div>
                                                             <div class="widget-subheading">
-                                                                <i>Par Ludwig</i></div>
+                                                                <i>Par {{ name }}</i></div>
                                                         </div>
                                                         <div class="widget-content-right">
                                                             <button

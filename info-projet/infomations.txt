@@ -5,5 +5,9 @@ Bootstrap
 
 creer une bdd nommée: mvc-todolist
 
+utilisateur de test
+login :john@doe.fr
+pw : azerty
+
 Temps passé : 8h
 

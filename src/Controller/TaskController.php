@@ -2,7 +2,9 @@
 
 namespace Controller;
 
+use Service\Session;
 use Model\TaskManager;
+use Model\UserManager;
 
 
 class TaskController extends AbstractController
@@ -13,51 +15,77 @@ class TaskController extends AbstractController
 
         //Verifier l'user et son token , sinon retourner une 404
 
-
     }
 
     public function home(){
-        $taskManager = new TaskManager();
 
-        $tasks = $taskManager->selectWhere('parent_id IS NULL');
+        if(Session::getInstance()->read('user_id')){
 
-        foreach ($tasks as $key => $task){
+            $user_id = Session::getInstance()->read('user_id');
 
-            $taskId = $task->getId();
-            $subtask = $taskManager->selectWhere("parent_id = $taskId");
-            $task->setSubtasks($subtask);
+            $taskManager = new TaskManager();
+            $userManager = new UserManager();
 
-            $tasks[$key]->subtasks = $subtask;
+            $user = $userManager->selectWhere('id ='.$user_id);
+
+            $user_api_token = $user[0]->getApiToken();
+            $user_name = $user[0]->getName();
+
+            $tasks = $taskManager->selectWhere('parent_id IS NULL AND user_id ='.$user_id);
+
+            foreach ($tasks as $key => $task){
+
+                $taskId = $task->getId();
+                $subtask = $taskManager->selectWhere("parent_id = $taskId");
+                $task->setSubtasks($subtask);
+
+                $tasks[$key]->subtasks = $subtask;
+
+            }
+
+            return $this->twig->render('Task/index.html.twig', ['tasks' => $tasks , 'api_token' => $user_api_token , 'name' => $user_name]);
+
 
         }
+        else{
+            return $this->twig->render('Auth/login.html.twig');
+        }
 
-        return $this->twig->render('Task/index.html.twig', ['tasks' => $tasks]);
-
+ 
     }
 
 
     public function index()
     {
         $taskManager = new TaskManager();
+        $userManager = new UserManager();
+        $headers = apache_request_headers();
+        $token = trim(str_replace('Bearer', '', $headers['Authorization']));
+        $user = $userManager->selectWhere("api_token = '$token'");
 
-        $tasks = $taskManager->selectWhere('parent_id IS NULL');
+        if($user){
+            $user_id = $user[0]->getId();
+            $user_name = $user[0]->getName();
+            $tasks = $taskManager->selectWhere('parent_id IS NULL AND user_id ='.$user_id);
 
-        foreach ($tasks as $key => $task){
+            foreach ($tasks as $key => $task){
 
-            $taskId = $task->getId();
-            $subtask = $taskManager->selectWhere("parent_id = $taskId");
-            $tasks[$key]->subtasks = $subtask;
+                $taskId = $task->getId();
+                $subtask = $taskManager->selectWhere("parent_id = $taskId");
+                $tasks[$key]->subtasks = $subtask;
+                $tasks['name'] = $user_name;
 
+            }
+            
+            header('HTTP/1.1 200 Created');
+            header('Content-Type:application/json');
+            return json_encode($tasks);
         }
-        /*
-        echo '<pre>';
-        var_dump($tasks);
-        echo '</pre>';
-        */
-        
-        header('HTTP/1.1 200 Created');
-        header('Content-Type:application/json');
-        return json_encode($tasks);
+        else{
+           header('HTTP/1.1 401 Forbidden');
+            header('Content-Type:application/json');
+            return json_encode('Not Allowed'); 
+        }
 
     }
 
@@ -65,19 +93,36 @@ class TaskController extends AbstractController
 
     public function store(){
 
-        $title = htmlentities($_POST['title']);
-        $parent_id = isset($_POST['parent']) && $_POST['parent'] != 0 ? $_POST['parent'] : NULL;
+        $headers = apache_request_headers();
+        $token = trim(str_replace('Bearer', '', $headers['Authorization']));
+
+        $userManager = new UserManager();
+        $user = $userManager->selectWhere("api_token = '$token'");
+
+        if($user){
+            $user_id = $user[0]->getId();
+            $user_name = $user[0]->getName();
+            $title = htmlentities($_POST['title']);
+            $parent_id = isset($_POST['parent']) && $_POST['parent'] != 0 ? $_POST['parent'] : NULL;
 
 
-        $taskManager = new TaskManager();
-        $data = array('title' => $title, 'done' => 0 , 'parent_id' => $parent_id , 'user_id' => 1 , 'created_at' => date('Y-m-d H:i:s') , 'updated_at' => date('Y-m-d H:i:s'));
+            $taskManager = new TaskManager();
+            $data = array('title' => $title, 'done' => 0 , 'parent_id' => $parent_id , 'user_id' => $user_id , 'created_at' => date('Y-m-d H:i:s') , 'updated_at' => date('Y-m-d H:i:s'));
 
-        $tasks = $taskManager->insert($data); 
-        /*
-        header('HTTP/1.1 201 Created');
-        header('Content-Type:application/json');
-        */
-        return json_encode(array('task' => $tasks , 'userName' => 'Ludwig'));
+            $tasks = $taskManager->insert($data); 
+            /*
+            header('HTTP/1.1 201 Created');
+            header('Content-Type:application/json');
+            */
+            header('Content-Type:application/json');
+            return json_encode(array('task' => $tasks , 'userName' => $user_name));
+        }
+        else{
+           header('HTTP/1.1 401 Forbidden');
+            header('Content-Type:application/json');
+            return json_encode('Not Allowed'); 
+        }
+
 
 
     } 
@@ -86,15 +131,31 @@ class TaskController extends AbstractController
         $taskManager = new TaskManager();
         $tasks = $taskManager->selectOneById($id);
 
-        if($tasks->getParentId() == NULL){
-            $taskManager->deleteWhere("parent_id = $id");
+        $headers = apache_request_headers();
+        $token = trim(str_replace('Bearer', '', $headers['Authorization']));
+
+        $userManager = new UserManager();
+        $user = $userManager->selectWhere("api_token = '$token'");
+        if($user){
+            $user_id = $user[0]->getId();
+
+            if($tasks->getParentId() == NULL){
+                $taskManager->deleteWhere("parent_id = $id AND user_id = $user_id");
+            }
+
+            $task = $taskManager->delete($id);
+
+            header('HTTP/1.1 200');
+            header('Content-Type:application/json');
+            return json_encode("OK");
+        }
+        else{
+           header('HTTP/1.1 401 Forbidden');
+            header('Content-Type:application/json');
+            return json_encode('Not Allowed'); 
         }
 
-        $task = $taskManager->delete($id);
 
-        header('HTTP/1.1 200');
-        header('Content-Type:application/json');
-        return json_encode("OK");
     }
 
     public function update($id){

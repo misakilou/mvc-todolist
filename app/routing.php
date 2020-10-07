@@ -10,4 +10,11 @@ $routes = [
         ['markAsDone', '/api/tasks/markasdone/{id:\d+}', 'PATCH'], // action, url, method
 
     ],
+    'User' => [
+    	['home', '/register', 'GET'], // action, url, method
+    	['store', '/register', 'POST'], // action, url, method
+        ['logout', '/logout', 'GET'], // action, url, method
+        ['login', '/login', 'GET'], // action, url, method
+        ['auth', '/login', 'POST'],
+    ],	
 ];
